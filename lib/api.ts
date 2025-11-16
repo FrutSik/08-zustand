@@ -6,7 +6,7 @@ interface NotesApiResponse {
   totalPages: number;
 }
 
-export interface NewNote {
+interface NewNote {
   title: string;
   content?: string;
   tag: NoteTag;
@@ -27,14 +27,25 @@ export const fetchNotes = async (
   page: number,
   tag?: string
 ): Promise<NotesApiResponse> => {
-  const response = await api.get<NotesApiResponse>("/notes", {
-    params: {
-      search,
-      page,
-      ...(tag && tag !== "all" && { tag }),
-    },
-  });
-  return response.data;
+  try {
+    let apiTag = tag;
+
+    if (tag && tag !== "all") {
+      apiTag = tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase();
+    }
+
+    const response = await api.get<NotesApiResponse>("/notes", {
+      params: {
+        search,
+        page,
+        ...(apiTag && apiTag !== "All" && { tag: apiTag }),
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching notes:", error);
+    throw error;
+  }
 };
 
 export const fetchNoteById = async (id: string): Promise<Note> => {

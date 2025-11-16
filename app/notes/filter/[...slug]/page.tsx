@@ -6,45 +6,24 @@ import {
 import { fetchNotes } from "../../../../lib/api";
 import NotesClient from "./Notes.client";
 import { NoteTag } from "@/types/note";
-import { Metadata } from "next";
 
 type NotesProps = {
   params: Promise<{ slug: string[] }>;
 };
-
-export async function generateMetadata({
-  params,
-}: NotesProps): Promise<Metadata> {
-  const { slug } = await params;
-  const tag = slug[0] === "All" ? "All" : (slug[0] as NoteTag);
-
-  return {
-    title: `Notes: ${tag}`,
-    description:
-      "Browse your notes, stay organized, and manage your ideas with NoteHub.",
-    openGraph: {
-      title: `Notes: ${tag}`,
-      description:
-        "Browse your notes, stay organized, and manage your ideas with NoteHub.",
-      url: `https://08-zustand-nine-eta.vercel.app/${tag}`,
-      images: [
-        {
-          url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
-          width: 1200,
-          height: 630,
-          alt: "NoteHub image",
-        },
-      ],
-    },
-  };
-}
 
 export default async function Notes({ params }: NotesProps) {
   const queryClient = new QueryClient();
 
   const { slug } = await params;
 
-  const tag = slug[0] === "All" ? undefined : (slug[0] as NoteTag);
+  let tag: NoteTag | undefined;
+
+  if (slug && slug[0]) {
+    const tagParam = slug[0].toLowerCase();
+    if (tagParam !== "all") {
+      tag = tagParam as NoteTag;
+    }
+  }
 
   await queryClient.prefetchQuery({
     queryKey: ["notes", "", 1, tag],
